@@ -1,7 +1,7 @@
 package gov.noaa.cbrfc;
 
 import java.io.*;
-import java.util.List;
+import java.util.*;
 import java.util.zip.GZIPInputStream;
 
 import javax.xml.bind.*;
@@ -97,6 +97,11 @@ public class Application {
 			int fileCount=0;
 			Simulation simulation = new Simulation();
 			
+			Vector<Simulation> simulations = new Vector<Simulation>();
+			Vector<Location> locations = new Vector<Location>();
+			Vector<Ensemble> ensembles = new Vector<Ensemble>();
+			Vector<ForecastEvent> forecastEvents = new Vector<ForecastEvent>();
+			
 			for (String file : list) {
 				fileCount++;
 				//String temp = new StringBuffer(filename_extension_filter).append(File.separator).append(file).toString();
@@ -156,7 +161,9 @@ public class Application {
 						  }
 						  
 						  // save forecast/simulation
-						  simulationRepository.save(simulation);
+						  //simulationRepository.save(simulation);
+						  simulations.add(simulation);
+						  
 						  
 			        }
 			        
@@ -173,7 +180,8 @@ public class Application {
 					  location.setY(header.getY());
 					  location.setZ(header.getZ());
 					  // save location
-					  locationRepository.save(location);
+					  //locationRepository.save(location);
+					  locations.add(location);
 					  
 					  
 	
@@ -188,39 +196,51 @@ public class Application {
 					ensemble.setMember(header.getEnsembleMemberIndex().intValue());
 					ensemble.setTimeSeriesType(header.getType().value());
 					
-					ensembleRepository.save(ensemble);
+					//ensembleRepository.save(ensemble);
+					ensembles.add(ensemble);
 					
 					// now all three foreign keys of the join are done (available) for event tags to be processed into forecast events table
 					// get all event children of <series>
 					
 					List events = series.getPropertiesAndDomainAxisValuesAndEvent();
 					
-					
+					StringBuffer eventsBuffer = new StringBuffer();
+					int eventCount = 0;
 					for (Object eventObj : events) {
+						eventCount++;
 						EventComplexType event = (EventComplexType) eventObj;
-						ForecastEvent forecastEvent = new ForecastEvent();
-						// first the joins
-						forecastEvent.setLocation(location);
-						forecastEvent.setEnsemble(ensemble);
-						forecastEvent.setSimulation(simulation);
-						//now the timestamp
-						forecastEvent.setFlowTimestamp(ZuluTimeStamp.toInstant(event.getDate(), event.getTime()));
-						forecastEvent.setFlowVolume(event.getValueAttribute());
-						forecastEvent.setFlag(event.getFlag());
-						
-						// set the missing flag
-						if (forecastEvent.getFlowVolume() == header.getMissVal())
+						if (eventCount > 1) eventsBuffer.append(",");
+						eventsBuffer.append(event.getValueAttribute());
+						if (eventCount == events.size())
 						{
-							forecastEvent.setMissing(true);
+						  ForecastEvent forecastEvent = new ForecastEvent();
+						  // first the joins
+						  forecastEvent.setLocation(location);
+						  forecastEvent.setEnsemble(ensemble);
+						  forecastEvent.setSimulation(simulation);
+						  // add comma-separated values
+						  forecastEvent.setFlowData(eventsBuffer.toString());
+						  forecastEvents.add(forecastEvent);
 						}
 						
+						//////////////////
+						// 
+						//now the timestamp
+						//forecastEvent.setFlowTimestamp(ZuluTimeStamp.toInstant(event.getDate(), event.getTime()));
+						//forecastEvent.setFlowVolume(event.getValueAttribute());
+						//forecastEvent.setFlag(event.getFlag());
 						
-						eventsRepository.save(forecastEvent);
+						// set the missing flag
+						//if (forecastEvent.getFlowVolume() == header.getMissVal())
+						//{
+							//forecastEvent.setMissing(true);
+						//}
 						
 						
-						
+						//eventsRepository.save(forecastEvent);
 					} // end for (Object eventObj : events)  
 					
+				
 					
 					////////////////////////////////////////
 					//  doing just flow_volumes as an array...in which case ensemble(trace) and simulation can be normalied into one relation. 
@@ -248,7 +268,16 @@ public class Application {
 		        } // end for (TimeSeriesComplexType series : timeSeriesList)
 			} // end for (String file : list)
 
-		};
+			
+			/////////////////////////////////////////////////////////
+			// now do saves of entire collections in one fell swoop
+			log.info("Saving " + forecastEvents.size() + " event records");
+			simulationRepository.save(simulations);
+			locationRepository.save(locations);
+			ensembleRepository.save(ensembles);
+			eventsRepository.save(forecastEvents);
+			
+		}; // end of CommanLineRunner
 		
 		
 

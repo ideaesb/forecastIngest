@@ -113,14 +113,15 @@ CREATE TABLE forecast_event
    simulation_id bigint NOT NULL, -- foreign key naming convention follows 
    ensemble_member integer NOT NULL, -- org.springframework.boot.orm.jpa.hibernate.SpringNamingStrategy
    location_id text NOT NULL, -- whereby foreign key columns names are code as tablename_referenced column name.
-   flow_timestamp timestamp with time zone,
-   flow_volume double precision,
-   flag integer,
-   flag_source text,
-   comment text,
-   user_name text,
-   missing boolean,
-   --flow_volumes double precision [], -- current implementation of PostgreSQL (9.4) ignores any supplied array size limits, i.e., the behavior is the same as for arrays of unspecified length.
+   flow_data text,
+   -- flow_timestamp timestamp with time zone,
+   -- flow_volume double precision,
+   -- flag integer,
+   -- flag_source text,
+   -- comment text,
+   -- user_name text,
+   -- missing boolean,
+   -- flow_volumes double precision [], -- current implementation of PostgreSQL (9.4) ignores any supplied array size limits, i.e., the behavior is the same as for arrays of unspecified length.
    CONSTRAINT forecast_event_pkey PRIMARY KEY (id),
    CONSTRAINT forecast_event_simulation_fk FOREIGN KEY (simulation_id)
    REFERENCES simulation (id) MATCH SIMPLE

@@ -39,20 +39,21 @@ public class ForecastEvent  {
 	private Simulation simulation;
 	
 	
+	////////////////
+	//  Flows Data 
+	private String flowData;
+	
 	/////////
 	//  Extra columns - based on Event Complex Type
 
 	//private double [] flowVolumes;
-	
-
-
-	private Timestamp flowTimestamp; 
-	private double flowVolume;
-	private int flag;
-	private String flagSource;
-	private String comment;
-	private String userName; // user is a reserved PostGreSQL keyword, so use userName
-	private boolean missing;
+	//private Timestamp flowTimestamp; 
+	//private double flowVolume;
+	//private int flag;
+	//private String flagSource;
+	//private String comment;
+	//private String userName; // user is a reserved PostGreSQL keyword, so use userName
+	//private boolean missing;
 	// getters, setters
 	public Location getLocation() {
 		return location;
@@ -78,6 +79,15 @@ public class ForecastEvent  {
 		this.simulation = simulation;
 	}
 
+	public String getFlowData() {
+		return flowData;
+	}
+
+	public void setFlowData(String flowData) {
+		this.flowData = flowData;
+	}
+	
+	/*
 	public Timestamp getFlowTimestamp() {
 		return flowTimestamp;
 	}
@@ -133,7 +143,7 @@ public class ForecastEvent  {
 	public void setMissing(boolean missing) {
 		this.missing = missing;
 	}
-	/*
+	
 	public double[] getFlowVolumes() {
 		return flowVolumes;
 	}
@@ -148,11 +158,8 @@ public class ForecastEvent  {
 	public String toString()
 	{
 		return String.format(
-				"Event[timeStamp = '%s', value ='%s']", flowTimestamp, flowVolume); 
+				//"Event[timeStamp = '%s', value ='%s']", flowTimestamp, flowVolume); 
+				"Event[values ='%s']", flowData); 
 	}
-   
-	
-	
-	
 
 }
