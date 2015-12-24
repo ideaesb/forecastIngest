@@ -1,0 +1,18 @@
+<project name="MyProject" default="git" basedir=".">
+  <description>
+    simple example build file
+  </description>
+
+	<!-- set global properties for this build -->
+  <property name="git.dir" value="/Users/udaykari/Documents/source/forecastIngest/"/>
+
+
+  <target name="git" description="refresh the git directory for check-in">
+    <copy todir="${git.dir}/src" verbose="true">
+     <fileset dir="src"/>
+    </copy>
+  	<copy file="build.xml" todir="${git.dir}" />
+  	<copy file="pom.xml" todir="${git.dir}" />
+  </target>
+
+</project>
