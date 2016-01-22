@@ -4,7 +4,7 @@ import java.io.*;
 
 /**
  * test class for listing files ending in SIM24.SQME.24.CS.xml.gz
- * commented out to avoid another ambiguous point of entry to Application.class 
+ * commented out to avoid another ambiguous point of entry to Application 
  * @author udaykari
  *
  */

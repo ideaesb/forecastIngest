@@ -25,8 +25,8 @@ public class Simulation {
     private Timestamp endDate;
     
     private Timestamp simulationDate;
-    
-    private int timeStepMultiplier;
+ 
+	private int timeStepMultiplier;
     private String units;
     
     public String toString ()
@@ -35,6 +35,14 @@ public class Simulation {
 				"Forecast[Period = '%s' - '%s', Simulation Date = '%s']", 
 				startDate, endDate, simulationDate); 
     }
+    
+    public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
 
 	public Timestamp getStartDate() {
 		return startDate;

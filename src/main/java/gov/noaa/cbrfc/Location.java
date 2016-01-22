@@ -1,8 +1,6 @@
 package gov.noaa.cbrfc;
 
 import javax.persistence.Entity;
-import javax.persistence.Enumerated;
-import javax.persistence.EnumType;
 import javax.persistence.Id;
 
 @Entity

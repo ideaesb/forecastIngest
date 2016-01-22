@@ -1,0 +1,280 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Water Supply Forecasts</title>
+    <style> 
+           /* set the CSS */
+	
+		body { font: 12px Arial;}
+		
+		path { 
+		    stroke: steelblue;
+		    stroke-width: 2;
+		    fill: none;
+		}
+		
+		.axis path,
+		.axis line {
+		    fill: none;
+		    stroke: grey;
+		    stroke-width: 1;
+		    shape-rendering: crispEdges;
+		}
+		table{
+		    margin-left: 250px;
+		    border-collapse: collapse;
+		    border: 2px black solid;
+		}
+		td, th {
+		    padding: 1px 4px;
+		    border: 1px black solid;
+		}
+	</style>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <script src="//d3js.org/d3.v3.min.js"></script>
+    <script src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+    <script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+    <script th:inline="javascript">
+      var stats = /*[[${stats}]]*/ null;
+    </script>
+    <script>
+     function setIds()
+     {
+  
+    	//alert('setting location ID to ' + document.getElementById('locSelect').value);
+    	//alert('setting From Date ' + document.getElementById('fromDateSelect').value);
+    	//alert('setting To Date ' + document.getElementById('toDateSelect').value);
+    	
+    	
+    	document.getElementById('locId').value = document.getElementById('locSelect').value;
+    	
+    	
+    	document.getElementById('frDate').value = document.getElementById('fromDateSelect').value;
+    	document.getElementById('toDate').value = document.getElementById('toDateSelect').value;
+    	
+        return true;
+     }
+     </script>
+     <script>
+     $(document).ready(function() {
+     	
+     	var margin = {top: 20, right: 80, bottom: 30, left: 50},
+     	    width = 960 - margin.left - margin.right,
+     	    height = 500 - margin.top - margin.bottom;
+
+     	
+     	var parseDate = d3.time.format("%Y-%m-%d").parse;
+
+     	var x = d3.time.scale()
+     	    .range([0, width]);
+
+     	var y = d3.scale.linear()
+     	    .range([height, 0]);
+
+     	var color = d3.scale.category10();
+
+     	var xAxis = d3.svg.axis()
+     	    .scale(x)
+     	    .orient("bottom");
+
+     	var yAxis = d3.svg.axis()
+     	    .scale(y)
+     	    .orient("left");
+
+     	var line = d3.svg.line()
+     	    .interpolate("basis")
+     	    .x(function(d) { return x(d.date); })
+     	    .y(function(d) { return y(d.temperature); });
+
+     	var svg = d3.select("body").append("svg")
+     	    .attr("width", width + margin.left + margin.right)
+     	    .attr("height", height + margin.top + margin.bottom)
+     	  .append("g")
+     	    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  
+     	  //if (error) throw error;
+        function InitChart(data) 
+        { 
+
+     	  // get the first row, filter out all headers that are NOT "date"
+     	  color.domain(d3.keys(data[0]).filter(function(key) { return key !== "date"; }));
+
+     	  data.forEach(function(d) {
+     	    d.date1 = parseDate(d.date);
+     	  });
+
+     	  var cities = color.domain().map(function(name) {
+     	    return {
+     	      name: name,
+     	      values: data.map(function(d) {
+     	        return {date: d.date1, temperature: +d[name]};
+     	      })
+     	    };
+     	  });
+
+     	  x.domain(d3.extent(data, function(d) { return d.date1; }));
+
+     	  y.domain([
+     	    d3.min(cities, function(c) { return d3.min(c.values, function(v) { return v.temperature; }); }),
+     	    d3.max(cities, function(c) { return d3.max(c.values, function(v) { return v.temperature; }); })
+     	  ]);
+
+     	  svg.append("g")
+     	      .attr("class", "x axis")
+     	      .attr("transform", "translate(0," + height + ")")
+     	      .call(xAxis);
+
+     	  svg.append("g")
+     	      .attr("class", "y axis")
+     	      .call(yAxis)
+     	    .append("text")
+     	      .attr("transform", "rotate(-90)")
+     	      .attr("y", 6)
+     	      .attr("dy", ".71em")
+     	      .style("text-anchor", "end")
+     	      .text("Seasonal Flows (KAF)");
+
+     	  var city = svg.selectAll(".city")
+     	      .data(cities)
+     	    .enter().append("g")
+     	      .attr("class", "city");
+
+     	  city.append("path")
+     	      .attr("class", "line")
+     	      .attr("d", function(d) { return line(d.values); })
+     	      .style("stroke", function(d) { return color(d.name); });
+
+     	  city.append("text")
+     	      .datum(function(d) { return {name: d.name, value: d.values[d.values.length - 1]}; })
+     	      .attr("transform", function(d) { return "translate(" + x(d.value.date) + "," + y(d.value.temperature) + ")"; })
+     	      .attr("x", 3)
+     	      .attr("dy", ".35em")
+     	      .text(function(d) { return d.name; });
+     	      
+     	      
+     	  // The table generation function
+     	function tabulate(data, columns) {
+     	    var table = d3.select("body").append("table")
+     	            .attr("style", "margin-left: 250px")
+     	            .style("border-collapse", "collapse")
+     	            .style("border", "2px black solid"),
+     	            
+     	        thead = table.append("thead"),
+     	        tbody = table.append("tbody");
+
+     	    // append the header row
+     	    thead.append("tr")
+     	        .selectAll("th")
+     	        .data(columns)
+     	        .enter()
+     	        .append("th")
+     	            .text(function(column) { return column; });
+
+     	    // create a row for each object in the data
+     	    var rows = tbody.selectAll("tr")
+     	        .data(data)
+     	        .enter()
+     	        .append("tr");
+
+     	    // create a cell in each row for each column
+     	    var cells = rows.selectAll("td")
+     	        .data(function(row) {
+     	            return columns.map(function(column) {
+     	                return {column: column, value: row[column]};
+     	            });
+     	        })
+     	        .enter()
+     	        .append("td")
+     	        .attr("style", "font-family: Courier") // sets the font style
+     	            .html(function(d) { return d.value; });
+     	    
+     	    return table;
+     	} // end tabulate
+
+     	// render the table
+     	
+    	var peopleTable = tabulate(data, ["date", "min", "p10", "p30", "p50", "periodAverage", "p70", "p90", "max", "average"]);
+     	    
+     	      
+     	      
+     	      
+     	} // function Initchart(data) 
+     	
+     	
+     	
+        ////////////////
+        // draw 
+     	
+     	
+        InitChart(stats);
+     	
+     	
+     	
+     });  // end of on document load jquery
+   
+    	
+    </script>
+</head>
+<body>
+   
+<table>
+<tr>
+  <td colspan="2" align="center" bgcolor="#F5F5DC">
+
+    Forecasts for Water Year<br></br>
+    
+   <form th:name="locForm" action="#" th:action="@{/wro/wsf}" th:object="${currentLocation}" method="post"> 
+      <select th:id="locSelect" th:field="*{id}">
+        <option th:each="location : ${allLocations}" 
+          th:value="${location.id}" 
+          th:text="${location.stationName}"></option>
+      </select>
+    </form>        
+    
+
+  </td>
+</tr>
+<tr>
+  <td align="center" bgcolor="#F5F5DC">
+
+   From:    
+      <form th:name="fromDateForm" action="#" th:action="@{/wro/wsf}" th:object="${fromDate}" method="post"> 
+	      <select th:id="fromDateSelect" th:field="*{time}"> 
+	        <option th:each="date : ${allDates}" 
+	          th:value="${date.time}" 
+	          th:text="${#dates.format(date, 'MMM-dd')}"></option>
+	      </select>
+      </form>      
+
+  </td>
+  <td align="center" bgcolor="#F5F5DC">
+
+   To:    
+      <form th:name="toDateForm" action="#" th:action="@{/wro/wsf}" th:object="${toDate}" method="post"> 
+	      <select th:id="toDateSelect" th:field="*{time}"> 
+	        <option th:each="date : ${allDates}" 
+	          th:value="${date.time}" 
+	          th:text="${#dates.format(date, 'MMM-dd')}"></option>
+	      </select>
+      </form>      
+
+  </td>
+</tr>
+<tr>
+  <td align="center" colspan="2">
+    <form name="theOne" id="theOne" action="/wro/wsf"  method="post" onsubmit="return setIds()"> 
+      <input type="hidden" name="locId" id="locId" value=""></input>
+     
+      <input type="hidden" name="frDate" id="frDate" value=""></input>
+      <input type="hidden" name="toDate" id="toDate" value=""></input>
+      <input type="submit" value="GO!"></input>
+    </form>
+    </td>
+</tr>
+  <tr>
+     <th th:text="${queryTime}" colspan="2" align="center" bgcolor="#F2F5A9"></th>
+   </tr>
+ </table>
+</body>
+</html>

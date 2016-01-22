@@ -113,7 +113,7 @@ CREATE TABLE forecast_event
    simulation_id bigint NOT NULL, -- foreign key naming convention follows 
    ensemble_member integer NOT NULL, -- org.springframework.boot.orm.jpa.hibernate.SpringNamingStrategy
    location_id text NOT NULL, -- whereby foreign key columns names are code as tablename_referenced column name.
-   flow_data text,
+   flow_data text, -- this is just a comma separated list of flows (to be exposed in JSON anyway i.e. text)
    -- flow_timestamp timestamp with time zone,
    -- flow_volume double precision,
    -- flag integer,
@@ -139,5 +139,39 @@ WITH (
 ALTER TABLE forecast_event
   OWNER TO postgres;
   
-SET TIME ZONE 'zulu';
+-- Table: "EXCEEDANCE"
+
+-- DROP TABLE exceedance
+
+CREATE TABLE exceedance
+(
+   id bigserial NOT NULL, -- this will create sequence "EXCEEDANCE_id_seq";
+   simulation_id bigint NOT NULL, -- foreign key naming convention follows 
+   location_id text NOT NULL, -- whereby foreign key columns names are code as tablename_referenced column name.
+   run_date timestamp with time zone,
+   minimum double precision,
+   percentile10 double precision,
+   percentile30 double precision,
+   period_average double precision,
+   percentile50 double precision,
+   percentile70 double precision,
+   percentile90 double precision,
+   maximum double precision,
+   average double precision,
+   observed double precision,
+   CONSTRAINT exceedance_pkey PRIMARY KEY (id),
+   CONSTRAINT exceedance_simulation_fk FOREIGN KEY (simulation_id)
+   REFERENCES simulation (id) MATCH SIMPLE
+   ON UPDATE CASCADE ON DELETE CASCADE, 
+   CONSTRAINT exceedance_location_fk FOREIGN KEY (location_id)
+   REFERENCES location (id) MATCH SIMPLE
+   ON UPDATE CASCADE ON DELETE CASCADE
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE exceedance
+  OWNER TO postgres;
+
+  SET TIME ZONE 'zulu';
   

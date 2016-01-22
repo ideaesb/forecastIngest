@@ -1,0 +1,132 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>WSF</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <script>
+     function setIds()
+     {
+    	//alert('setting location ID to ' + document.getElementById('locSelect').value);
+    	//alert('setting simulation ID to ' + document.getElementById('simSelect').value);
+    	
+    	document.getElementById('locId').value = document.getElementById('locSelect').value;
+    	document.getElementById('simId').value = document.getElementById('simSelect').value;
+    	
+    	document.getElementById('frDate').value = document.getElementById('fromDateSelect').value;
+    	document.getElementById('toDate').value = document.getElementById('toDateSelect').value;
+    	
+        return true;
+     }
+</script>
+</head>
+<body>
+
+    <!-- >p th:text="'Hello, ' + ${locationId} +  '?!'" / -->
+ 
+<table border="1" width="450" id="data_table"> 
+
+<tr>
+  <td colspan="9" align="center" bgcolor="#F5F5DC">
+
+    Forecasts for Water Year<br></br>
+    
+   <form th:name="locForm" action="#" th:action="@{/wro/wsftable}" th:object="${currentLocation}" method="post"> 
+      <select th:id="locSelect" th:field="*{id}">
+        <option th:each="location : ${allLocations}" 
+          th:value="${location.id}" 
+          th:text="${location.stationName}"></option>
+      </select>
+    </form>        
+    
+
+  </td>
+</tr>
+<tr>
+
+  <td colspan="9" align="center">
+
+     Run Date: 
+      <form th:name="simForm" action="#" th:action="@{/wro/wsftable}" th:object="${currentSimulation}" method="post"> 
+	      <select th:id="simSelect" th:field="*{id}"> 
+	        <option th:each="simulation : ${allSimulations}" 
+	          th:value="${simulation.id}" 
+	          th:text="${#dates.format(simulation.simulationDate, 'yyyy-MM-dd')}"></option>
+	      </select>
+      </form>      
+
+    </td>
+</tr>
+<tr>
+  <td colspan="5" align="center" bgcolor="#F5F5DC">
+
+   From:    
+      <form th:name="fromDateForm" action="#" th:action="@{/wro/wsftable}" th:object="${fromDate}" method="post"> 
+	      <select th:id="fromDateSelect" th:field="*{time}"> 
+	        <option th:each="date : ${allDates}" 
+	          th:value="${date.time}" 
+	          th:text="${#dates.format(date, 'MMM-dd')}"></option>
+	      </select>
+      </form>      
+
+  </td>
+  <td colspan="4" align="center" bgcolor="#F5F5DC">
+
+   To:    
+      <form th:name="toDateForm" action="#" th:action="@{/wro/wsftable}" th:object="${toDate}" method="post"> 
+	      <select th:id="toDateSelect" th:field="*{time}"> 
+	        <option th:each="date : ${allDates}" 
+	          th:value="${date.time}" 
+	          th:text="${#dates.format(date, 'MMM-dd')}"></option>
+	      </select>
+      </form>      
+
+  </td>
+</tr>
+
+<tr>
+    <td colspan="8" valign="bottom" align="center"><font class = "wx3">Forecasts are in KAF</font></td>
+    <td rowspan="2" valign="bottom" align="center"><font class = "wx3">30 Year<br></br>Average</font><br></br><span id="normals_period">(1981-2010)</span></td></tr>
+
+<tr><td valign="bottom" align="center" nowrap="nowrap"><font class = "wx3">MAX</font></td>
+    <td valign="bottom" align="center" nowrap="nowrap"><font class = "wx3">90 %</font></td>
+    <td valign="bottom" align="center" nowrap="nowrap"><font class = "wx3">70 %</font></td>
+    <td valign="bottom" align="center" nowrap="nowrap"><font class = "wx3">50 %</font></td>
+    <td valign="bottom" align="center" nowrap="nowrap"><font class = "wx3">AVG</font></td>
+    <td valign="bottom" align="center" nowrap="nowrap"><font class = "wx3">30 %</font></td>
+    <td valign="bottom" align="center" nowrap="nowrap"><font class = "wx3">10 %</font></td>
+    <td valign="bottom" align="center" nowrap="nowrap"><font class = "wx3">MIN</font></td>
+</tr>
+
+<tr>
+  <td valign="bottom" align="center" style="background-color:#FFFFFF;" th:text="${#numbers.formatInteger(maximum,0)}"></td>
+  <td valign="bottom" align="center" style="background-color:#FFFFFF;" th:text="${#numbers.formatInteger(percentile90,0)}"></td>
+  <td valign="bottom" align="center" style="background-color:#FFFFFF;" th:text="${#numbers.formatInteger(percentile70,0)}"></td>
+  <td valign="bottom" align="center" style="background-color:#FFFFFF;" th:text="${#numbers.formatInteger(percentile50,0)}"></td>
+  <td valign="bottom" align="center" style="background-color:#FFFFFF;" th:text="${#numbers.formatInteger(periodAverage,0)}"></td>
+  <td valign="bottom" align="center" style="background-color:#FFFFFF;" th:text="${#numbers.formatInteger(percentile30,0)}"></td>
+  <td valign="bottom" align="center" style="background-color:#FFFFFF;" th:text="${#numbers.formatInteger(percentile10,0)}"></td>
+  <td valign="bottom" align="center" style="background-color:#FFFFFF;" th:text="${#numbers.formatInteger(minimum,0)}"></td>
+  <td valign="bottom" align="center" style="background-color:#FFFFFF;" th:text="${#numbers.formatInteger(average,0)}"></td>
+ </tr>
+<tr>
+  <td colspan="8" id="instructions">
+    FIRST, Select location, run date, from/to.  <br />THEN, press GO!
+  </td>
+    <td align="center">
+    <form name="theOne" id="theOne" action="/wro/wsftable"  method="post" onsubmit="return setIds()"> 
+      <input type="hidden" name="locId" id="locId" value=""></input>
+      <input type="hidden" name="simId" id="simId" value=""></input>
+      <input type="hidden" name="frDate" id="frDate" value=""></input>
+      <input type="hidden" name="toDate" id="toDate" value=""></input>
+      <input type="submit" value="GO!"></input>
+    </form>
+    </td>
+</tr>
+  <tr>
+     <th th:text="${queryTime}" colspan="9" align="center" bgcolor="#F2F5A9"></th>
+    </tr>
+</table>
+    
+</body>
+</html>
+

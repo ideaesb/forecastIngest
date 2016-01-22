@@ -40,7 +40,7 @@ public class ForecastEvent  {
 	
 	
 	////////////////
-	//  Flows Data 
+	//  Flows Data: comma delimited flows  
 	private String flowData;
 	
 	/////////
