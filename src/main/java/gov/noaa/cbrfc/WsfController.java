@@ -198,6 +198,17 @@ public class WsfController {
 			log.info(events.size() + " ensembles found.  Success: (Query Took " + (after-before) + " milliseconds).");
 		}
 
+		
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//  Imagine a spreadsheet.  Columns are simulation (forecast/run) dates, rows are ensemble members (years)
+		//  Cells[i=year][j=forecast date] are cumulative FLOWS forecast for that year, according to run date according 
+		//  to some "filter" logic (or none, meaning no filter or simply add all flows for that year - cumulative flows).  
+		//  The only filter considered for now is from/to and by default it is Apr to July.  
+		//  So only flows between April to July are summed up for any given run. 
+		//  This filtered flows are in cumulative period flows.   
+		//  HOWEVER (per John Friday 22-JAN-2016), if the simulation date itself is within April-July (from/to), there is 
+		//  usually an actual volume upto that data - so no need for model data.  
+		//  Sooooo - if run date is AFTER from date and BEFORE to Date, cumulativePeriodFlows should add from currentDate (not from) 
 
 	    // this will add up all the flows between from and to dates for percentile states
 		double [][] cumulativeFlows = new double[ensembles.size()][simulations.size()];   // will add all flows 
@@ -209,7 +220,9 @@ public class WsfController {
 
             Simulation simulation = event.getSimulation(); 
             int simIndex = NumberUtils.toInt(simulation.getId() + "") - 1;
-            LocalDate currentDate   = LocalDate.parse(formatter.format(simulation.getSimulationDate()));
+            LocalDate simulationDate   = LocalDate.parse(formatter.format(simulation.getSimulationDate()));
+            // the first flow in comma separted string is interpreted as current day 
+            LocalDate currentDate   = simulationDate;
             int currentYear = currentDate.getYear();
             
             Ensemble ensemble = event.getEnsemble(); 
@@ -220,8 +233,7 @@ public class WsfController {
             // cast start and end month/days in terms of current simulation run date			
 		 	SimpleDateFormat partialFormatter = new SimpleDateFormat("-MM-dd"); 
 			LocalDate startDate = LocalDate.parse(currentYear + partialFormatter.format(ffDate));
-			//LocalDate startDate = currentDate;
-                        LocalDate endDate   = LocalDate.parse(currentYear + partialFormatter.format(ttDate));		
+			LocalDate endDate   = LocalDate.parse(currentYear + partialFormatter.format(ttDate));		
 	
 			// check if current date is between start and end 
 			for (String flow: flows)
@@ -232,13 +244,36 @@ public class WsfController {
 				
 				  // add everything in cumulative 
 				  if (raw > 0.0) cumulativeFlows[ensIndex][simIndex] = cumulativeFlows[ensIndex][simIndex] + kaf;
-						
+				  
+				  // if current flow is within forecast period 
 				  if( (currentDate.isEqual(startDate) || currentDate.isAfter(startDate)) && 
-					  (currentDate.isEqual(endDate) || currentDate.isBefore(endDate)) )
+					  (currentDate.isEqual(endDate) || currentDate.isBefore(endDate))  )
 				  {
 						//log.info("ADDING currentDate = " + currentDate + " since it is  between " + startDate + ", and " + endDate);  
 						
-						if (raw > 0.0) cumulativePeriodflows[ensIndex][simIndex] = cumulativePeriodflows[ensIndex][simIndex] + kaf;
+					    // if simulation date is in the forecast period 
+					     if ( (simulationDate.isEqual(startDate) || simulationDate.isAfter(startDate)) &&
+					          (simulationDate.isEqual(endDate) || simulationDate.isBefore(endDate)) )
+					     {
+					    	 
+					    	 //////////////////////////////////////////////
+					    	 // use simulation date as start date
+					    	 
+							  // if current flow is within forecast period (simulation date to end date)
+					    	  // again - why? - because until simulation date we already have observed flows, no need to forecasts
+							  if( (currentDate.isEqual(simulationDate) || currentDate.isAfter(simulationDate)) && 
+								  (currentDate.isEqual(endDate) || currentDate.isBefore(endDate))  )
+							  {
+								  
+								  if (raw > 0.0) cumulativePeriodflows[ensIndex][simIndex] = cumulativePeriodflows[ensIndex][simIndex] + kaf;
+							  }
+					     }
+					     else
+					     {
+					    	// simulation date is not in forecast period, just add the flow
+					        // just add the flow to period flows 
+						    if (raw > 0.0) cumulativePeriodflows[ensIndex][simIndex] = cumulativePeriodflows[ensIndex][simIndex] + kaf;
+					     }
 				  }
 				  else
 				  {
@@ -309,17 +344,17 @@ public class WsfController {
 		      PeriodStats p = new PeriodStats();
 		      
 		      p.date = formatter.format(simulation.getSimulationDate());
-		      p.from = formatter.format(ffDate);
-		      p.to   = formatter.format(ttDate);
+		      //p.from = formatter.format(ffDate);
+		      //p.to   = formatter.format(ttDate);
 		      
 		      p.min = Math.round(minimum) + "";
 		      p.max = Math.round(maximum) + "";
 		   
-		      p.periodAverage = Math.round(periodAverage)+"";
-		      p.average = Math.round(average)+"";
+		      //p.periodAverage = Math.round(periodAverage)+"";
+		      //p.average = Math.round(average)+"";
 		      
 		      
-		      p.median = Math.round(percentile50)+"";
+		      //p.median = Math.round(percentile50)+"";
 		      
 		      p.p10 = Math.round(percentile10)+"";
 		      p.p30 = Math.round(percentile30)+"";

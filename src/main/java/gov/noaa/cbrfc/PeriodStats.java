@@ -8,20 +8,17 @@ package gov.noaa.cbrfc;
 public class PeriodStats {
 
 	String date="";
-	
-	String from=""; 
-	String to="";
-	
+
 	String min="";
 	String p10="";
 	String p30="";
 	String p50="";
-	String median="";
-	String periodAverage = "";
+	//String median="";
+	//String periodAverage = "";
 	String p70 ="";
 	String p90="";
 	String max="";
-	String average="";
+	//String average="";
 	
 	
 	public String getDate() {
@@ -30,6 +27,7 @@ public class PeriodStats {
 	public void setDate(String date) {
 		this.date = date;
 	}
+	/*
 	public String getFrom() {
 		return from;
 	}
@@ -42,6 +40,7 @@ public class PeriodStats {
 	public void setTo(String to) {
 		this.to = to;
 	}
+	*/
 	public String getMin() {
 		return min;
 	}
@@ -66,6 +65,7 @@ public class PeriodStats {
 	public void setP50(String p50) {
 		this.p50 = p50;
 	}
+	/*
 	public String getMedian() {
 		return median;
 	}
@@ -78,6 +78,7 @@ public class PeriodStats {
 	public void setPeriodAverage(String periodAverage) {
 		this.periodAverage = periodAverage;
 	}
+	*/
 	public String getP70() {
 		return p70;
 	}
@@ -96,13 +97,14 @@ public class PeriodStats {
 	public void setMax(String max) {
 		this.max = max;
 	}
+	/*
 	public String getAverage() {
 		return average;
 	}
 	public void setAverage(String average) {
 		this.average = average;
 	}
-	
+	*/
 	
 	
 	
